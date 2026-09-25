@@ -88,7 +88,7 @@ def main():
     parser.add_argument("--duration", type=float, required=True, help="Run duration in seconds.")
     parser.add_argument("--server", default="http://localhost:30000")
     parser.add_argument("--output", required=True)
-    parser.add_argument("--workers-per-10-qps", type=int, default=10)
+    parser.add_argument("--qps-per-worker", type=int, default=10)
     parser.add_argument("--flush-cache-interval", type=float, default=5.0,
                          help="Set to 0 when benchmarking MIS (cache-invariant, flush is a no-op); "
                               "leave at the default (>0) for SIS.")
@@ -128,7 +128,7 @@ def main():
             "error": result.get("error"),
         }
 
-    runner = OpenLoopRunner(args.qps, schedule, process_fn, workers_per_10_qps=args.workers_per_10_qps)
+    runner = OpenLoopRunner(args.qps, schedule, process_fn, qps_per_worker=args.qps_per_worker)
     records, wall_s = runner.run()
 
     if flush_thread is not None:
@@ -158,7 +158,7 @@ def main():
         "dataset_dir": args.dataset_dir,
         "split": args.split,
         "num_questions_pool": len(questions),
-        "workers_per_10_qps": args.workers_per_10_qps,
+        "qps_per_worker": args.qps_per_worker,
         "num_workers": runner.num_workers,
         "flush_cache_interval": args.flush_cache_interval,
         "accuracy_proxy": {

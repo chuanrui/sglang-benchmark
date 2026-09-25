@@ -120,7 +120,7 @@ def main():
                          help="Must be >= the max candidate count in the sample (this dataset maxes "
                               "at 16); set with margin so the correct letter is very likely captured "
                               "even when the model doesn't rank it in the top few tokens.")
-    parser.add_argument("--workers-per-10-qps", type=int, default=10,
+    parser.add_argument("--qps-per-worker", type=int, default=10,
                          help="Worker thread pool size = max(1, round(qps / this)). Default 10 matches "
                               "the project convention of qps/10 threads; use a smaller value (e.g. 2) "
                               "for heavier models whose own per-request latency approaches or exceeds "
@@ -167,7 +167,7 @@ def main():
             "error": result.get("error"),
         }
 
-    runner = OpenLoopRunner(args.qps, schedule, process_fn, workers_per_10_qps=args.workers_per_10_qps)
+    runner = OpenLoopRunner(args.qps, schedule, process_fn, qps_per_worker=args.qps_per_worker)
     records, wall_s = runner.run()
 
     if flush_thread is not None:
@@ -204,7 +204,7 @@ def main():
         "dataset_dir": args.dataset_dir,
         "split": args.split,
         "num_questions_pool": len(questions),
-        "workers_per_10_qps": args.workers_per_10_qps,
+        "qps_per_worker": args.qps_per_worker,
         "num_workers": runner.num_workers,
         "flush_cache_interval": args.flush_cache_interval,
         "accuracy_proxy": {

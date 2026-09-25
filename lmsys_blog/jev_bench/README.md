@@ -84,25 +84,6 @@ prefill internally — no need to pass those separately.)
 python -m sglang.launch_server --model-path <model_path> --port 30000 \
   --disable-radix-cache --chunked-prefill-size -1
 ```
-`--attention-backend flashinfer` is **not required** — the default backend
-(`fa3` on Hopper) works identically; we verified this produces the same
-throughput/latency and 0 errors. `--disable-radix-cache` and
-`--chunked-prefill-size -1` **are** required: Setwise's anchor-token
-pooling reads logits at absolute token positions from a single, complete
-forward pass over the full prompt. Radix-cache reuse or chunked prefill
-would each leave some anchor position's hidden state uncomputed for the
-current request, and the server validates this at request time — you'll
-get a clean `400 Bad Request` (not silently wrong results) if either flag
-is missing:
-```
-score_extraction_token_id requires --disable-radix-cache because pooling
-positions are relative to the full prompt.
-```
-We also confirmed (by deliberately patching out this validation) that
-running Setwise with radix cache + chunked prefill enabled isn't just
-"wrong results" — under load it hard-crashes the CUDA context with an
-out-of-bounds `vectorized_gather_kernel` assertion. Don't disable this
-guard in production.
 
 ## 3. Running the benchmarks
 
@@ -136,12 +117,13 @@ Key flags (see `openloop_common.py`'s module docstring for the full
 rationale):
 - `--qps`: target requests/second (Poisson arrivals).
 - `--duration`: wall-clock seconds to run.
-- `--workers-per-10-qps`: dispatch worker pool size, default assumes
-  ~100ms/request (i.e. `qps/10` workers). **Increase this** (e.g. to `2`,
-  giving 5x more workers) for slower models where per-request latency
-  approaches or exceeds 100ms — otherwise the worker pool itself becomes
-  the bottleneck, not the server, and you'll silently under-measure the
-  server's real ceiling. Sanity-check via `num_workers` and
+- `--qps-per-worker`: worker pool size divisor — `num_workers =
+  round(qps / this)`. Default `10` assumes ~100ms/request (each worker
+  sustains ~10 req/s). **Decrease this** (e.g. to `2`, giving 5x more
+  workers at the same target QPS) for slower models where per-request
+  latency approaches or exceeds 100ms — otherwise the worker pool itself
+  becomes the bottleneck, not the server, and you'll silently under-measure
+  the server's real ceiling. Sanity-check via `num_workers` and
   `service_latency_ms` in the output `summary.json`.
 - The Poisson schedule **never repeats a question** within one run (raises
   `--num-questions` as needed, capped to the dataset's pool size) —

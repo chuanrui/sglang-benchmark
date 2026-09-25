@@ -149,11 +149,11 @@ class OpenLoopRunner:
     worker's later-scheduled requests pile up behind it.
     """
 
-    def __init__(self, qps, schedule, process_fn, workers_per_10_qps=10):
+    def __init__(self, qps, schedule, process_fn, qps_per_worker=10):
         self.qps = qps
         self.schedule = schedule
         self.process_fn = process_fn
-        self.num_workers = max(1, round(qps / workers_per_10_qps))
+        self.num_workers = max(1, round(qps / qps_per_worker))
         self._q = queue.Queue()
         for job in schedule:
             self._q.put(job)

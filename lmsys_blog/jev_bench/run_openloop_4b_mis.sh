@@ -10,6 +10,6 @@ QPS_TARGETS="20 40 60 90 110 133"
 for Q in $QPS_TARGETS; do
   echo "=== 4B MIS openloop qps=$Q ==="
   python benchmark_sglang_score_api_openloop.py --dataset-dir $D --model-path $MODEL --qps $Q --duration $DUR \
-    --flush-cache-interval 0 --workers-per-10-qps 2 --server http://localhost:30000 --output results_openloop_mis_4b_qps$Q
+    --flush-cache-interval 0 --qps-per-worker 2 --server http://localhost:30000 --output results_openloop_mis_4b_qps$Q
 done
 echo MIS_4B_OPENLOOP_DONE

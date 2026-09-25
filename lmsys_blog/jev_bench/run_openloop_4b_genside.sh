@@ -11,18 +11,18 @@ for Q in $QPS_TARGETS; do
   echo "=== 4B N-calls Gen openloop qps=$Q ==="
   curl -s -X POST http://localhost:30000/flush_cache > /dev/null
   python benchmark_sglang_jev_openloop.py --dataset-dir $D --qps $Q --duration $DUR \
-    --workers-per-10-qps 2 --server http://localhost:30000 --output results_openloop_gen_ncalls_4b_qps$Q
+    --qps-per-worker 2 --server http://localhost:30000 --output results_openloop_gen_ncalls_4b_qps$Q
 done
 for Q in $QPS_TARGETS; do
   echo "=== 4B Batched-Completions openloop qps=$Q ==="
   curl -s -X POST http://localhost:30000/flush_cache > /dev/null
   python benchmark_sglang_batched_completions_openloop.py --dataset-dir $D --model-path $MODEL --qps $Q --duration $DUR \
-    --workers-per-10-qps 2 --server http://localhost:30000 --output results_openloop_batched_completions_4b_qps$Q
+    --qps-per-worker 2 --server http://localhost:30000 --output results_openloop_batched_completions_4b_qps$Q
 done
 for Q in $QPS_TARGETS; do
   echo "=== 4B SIS openloop qps=$Q ==="
   curl -s -X POST http://localhost:30000/flush_cache > /dev/null
   python benchmark_sglang_score_api_openloop.py --dataset-dir $D --model-path $MODEL --qps $Q --duration $DUR \
-    --flush-cache-interval 5 --workers-per-10-qps 2 --server http://localhost:30000 --output results_openloop_sis_4b_qps$Q
+    --flush-cache-interval 5 --qps-per-worker 2 --server http://localhost:30000 --output results_openloop_sis_4b_qps$Q
 done
 echo GENSIDE_4B_OPENLOOP_DONE

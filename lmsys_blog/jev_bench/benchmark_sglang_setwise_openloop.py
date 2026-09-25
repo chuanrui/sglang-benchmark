@@ -119,7 +119,7 @@ def main():
                          help="Dedicated single-token anchor pooled at each candidate (default: "
                               "Qwen's <|object_ref_start|>, repurposed here since it's otherwise "
                               "unused in a text-only workload).")
-    parser.add_argument("--workers-per-10-qps", type=int, default=10,
+    parser.add_argument("--qps-per-worker", type=int, default=10,
                          help="Worker thread pool size = max(1, round(qps / this)). Default 10 matches "
                               "the project convention of qps/10 threads; use a smaller value (e.g. 2) "
                               "for heavier models whose own per-request latency approaches or exceeds "
@@ -153,7 +153,7 @@ def main():
             "error": result.get("error"),
         }
 
-    runner = OpenLoopRunner(args.qps, schedule, process_fn, workers_per_10_qps=args.workers_per_10_qps)
+    runner = OpenLoopRunner(args.qps, schedule, process_fn, qps_per_worker=args.qps_per_worker)
     records, wall_s = runner.run()
 
     with (output / "samples.jsonl").open("w") as f:
@@ -181,7 +181,7 @@ def main():
         "dataset_dir": args.dataset_dir,
         "split": args.split,
         "num_questions_pool": len(questions),
-        "workers_per_10_qps": args.workers_per_10_qps,
+        "qps_per_worker": args.qps_per_worker,
         "num_workers": runner.num_workers,
         "accuracy_proxy": {
             "description": "argmax P(yes) over candidates (from single setwise /v1/score call) vs. "

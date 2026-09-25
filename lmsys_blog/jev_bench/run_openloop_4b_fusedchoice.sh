@@ -6,7 +6,7 @@ source <path_to_venv>/bin/activate
 export LD_LIBRARY_PATH=<path_to_venv>/lib/python3.12/site-packages/nvidia/nccl/lib:$LD_LIBRARY_PATH
 cd "$(dirname "$0")"
 # Assumes the standard tuned Generate/SIS server is already running on
-# localhost:30000. Uses --workers-per-10-qps 2 (5x more workers than the
+# localhost:30000. Uses --qps-per-worker 2 (5x more workers than the
 # project default) because this model's own per-request service latency is
 # high enough that the default qps/10 sizing becomes the dispatch
 # bottleneck itself rather than the server -- see openloop_common.py and
@@ -17,6 +17,6 @@ for Q in $QPS_TARGETS; do
   echo "=== 4B Fused-Choice openloop qps=$Q ==="
   curl -s -X POST http://localhost:30000/flush_cache > /dev/null
   python benchmark_sglang_fused_choice_openloop.py --dataset-dir $D --qps $Q --duration $DUR \
-    --workers-per-10-qps 2 --server http://localhost:30000 --output results_openloop_fused_choice_4b_qps$Q
+    --qps-per-worker 2 --server http://localhost:30000 --output results_openloop_fused_choice_4b_qps$Q
 done
 echo FUSEDCHOICE_4B_OPENLOOP_DONE
