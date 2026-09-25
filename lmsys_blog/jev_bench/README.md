@@ -38,22 +38,17 @@ scripts are the ones to trust for true matched-throughput comparisons.
 
 ### Setwise-only: patched sglang build
 
-Setwise scoring is **not available in stock sglang**. It requires two
-in-flight, unmerged upstream PRs stacked together:
-
-1. [sgl-project/sglang#38965](https://github.com/sgl-project/sglang/pull/38965)
-   ("Setwise Scoring Support") — adds the core multi-position pooling
-   primitive, restricted to SequenceClassification-headed models.
-2. [sundar24295s/sglang#2](https://github.com/sundar24295s/sglang/pull/2)
-   ("CausalLM support") — extends the primitive to CausalLM models
-   (what this benchmark uses). This PR's branch (`suramach/setwise-causallm`)
-   already stacks on top of #38965.
+CausalLM setwise scoring is not yet in stock sglang — it requires
+[PR #41188](https://github.com/sgl-project/sglang/pull/41188)
+("[Score API] Setwise scoring: CausalLM support (batched + `--enable-mis`)"),
+an open PR against `sgl-project/sglang` that extends the (already-merged)
+setwise-scoring primitive to CausalLM models.
 
 To build it:
 ```bash
-git clone https://github.com/sundar24295s/sglang.git
+git clone https://github.com/sgl-project/sglang.git
 cd sglang
-git checkout suramach/setwise-causallm
+gh pr checkout 41188   # or: git fetch https://github.com/sundar24295s/sglang.git suramach/setwise-causallm && git checkout FETCH_HEAD
 pip install -e "python[all]"
 ```
 
